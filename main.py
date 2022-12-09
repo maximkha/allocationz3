@@ -1,24 +1,22 @@
-from z3 import Int, Solver, And, Or
+from z3 import Int, And, Or, If, Solver
 import numpy as np
 
-FEATURE_COUNT = 1
-features = ["f1", "f2"]
-feature = {feature_name:fid for fid, feature_name in enumerate(features)}
+# feature: ((pins that implement...,), ...required pins)
 
-bundles = {"f1": ((0,), (1,)), "f2": ((0, 2), (1, 3))}
+bundles = {0: ((0,), (1,)), 1: ((0, 2), (1, 3))}
 
-pins = np.arange(4)
+FEATURE_COUNT = len(bundles.items())
+req_features = [0, 1]
 
 z3pins = []
-for pin in pins:
+for pin in np.arange(4):
     z3pins.append(Int(f"pin_{pin}"))
 
 valid_feature = [And(0 <= z3pin, z3pin <= FEATURE_COUNT) for z3pin in z3pins]
 
 feature_constraints = []
-for to_implement in features:
-    fid = feature[to_implement]
-    reqs = bundles[to_implement]
+for fid in req_features:
+    reqs = bundles[fid]
     current_cond = True
     pin_conds = []
     for pinids in reqs:
